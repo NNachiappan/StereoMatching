@@ -44,7 +44,6 @@ void disparityBlock(Mat &disp, short blockSize, Mat &left, Mat &right, int start
 			disp.at<ushort>(i, j) = j - x;
 
 		}
-		cout << i << endl;
 	}
 }
 
@@ -85,11 +84,11 @@ int main()
 
 	std::string image_path = samples::findFile("C:/Users/Nachiappan/source/repos/StereoMatching/StereoMatching/images/kitti_1L.jpg");
 	Mat left = imread(image_path, IMREAD_GRAYSCALE);
-	//cv::resize(left, left, cv::Size(), 0.25, 0.25);
+	//cv::resize(left, left, cv::Size(), 0.5, 0.5);
 
 	image_path = samples::findFile("C:/Users/Nachiappan/source/repos/StereoMatching/StereoMatching/images/kitti_1R.jpg");
 	Mat right = imread(image_path, IMREAD_GRAYSCALE);
-	//cv::resize(right, right, cv::Size(), 0.25, 0.25);
+	//cv::resize(right, right, cv::Size(), 0.5, 0.5);
 
 	int windSize = 0;
 	cout << "Enter window size:" << endl;
@@ -105,8 +104,14 @@ int main()
 	copyMakeBorder(left, left, border, border, border, border, BORDER_REPLICATE);
 	copyMakeBorder(right, right, border, border, border, border, BORDER_REPLICATE);
 
-
+	////CPU Disparity + Timing
+	//auto start = std::chrono::high_resolution_clock::now();
 	//disparity(numThreads, windSize, disp, left, right);
+	//auto stop = std::chrono::high_resolution_clock::now();
+	//std::chrono::duration<double, std::milli> duration = (stop - start);
+	//cout << "CPU Time ms: " << duration.count() << endl;
+
+	//GPU Disparity
 	disparityGPU(disp, left, right, disp.rows, disp.cols, windSize);
 
 

@@ -97,6 +97,14 @@ __global__ void disparity(unsigned short int* dispImage, unsigned char* left, un
 }
 
 void disparityGPU(cv::Mat& dispImage, cv::Mat& left, cv::Mat& right, int m, int n, short windSize) {
+
+	//Timer code
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+
+
+
 	unsigned short int* d_disparity;
 	unsigned char *d_left, *d_right;
 	
@@ -119,10 +127,17 @@ void disparityGPU(cv::Mat& dispImage, cv::Mat& left, cv::Mat& right, int m, int 
 	cudaMemcpy(d_right, right.ptr(), right.step * right.rows, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_disps, disps, sizeof(unsigned int) * numCalcs * m, cudaMemcpyHostToDevice);
 
+	cudaEventRecord(start);
 	disparity<<<m, 1024, (sizeof(unsigned char) * 2 * (left.cols) * windSize) >>>(d_disparity, d_left, d_right, m, n, windSize, numCalcs, pixPBlock, d_disps);
+	cudaEventRecord(stop);
+
 
 	cudaMemcpy(dispImage.ptr(), d_disparity, dispImage.step * dispImage.rows, cudaMemcpyDeviceToHost);
-	cudaMemcpy(disps, d_disps, sizeof(unsigned int) * numCalcs * m, cudaMemcpyDeviceToHost);
+	cudaEventSynchronize(stop);
+
+	float milliseconds = 0;
+	cudaEventElapsedTime(&milliseconds, start, stop);
+	cout << "GPU Time ms: " << milliseconds << endl;
 
 
 	cudaFree(d_disparity);
